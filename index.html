@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Couple's Expense Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ffe0e0 0%, #ffb6b6 100%);
+            padding: 2rem;
+        }
+
+        .calculator {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 500px;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 480px) {
+            .calculator {
+                width: 98%;
+                padding: 1.5rem;
+            }
+            body {
+                padding: 1rem;
+            }
+        }
+
+        .title-wrapper {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            font-size: 1.5rem;
+            padding-bottom: 0.6rem;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.25rem;
+            }
+
+            .quote {
+                font-size: 0.8rem;
+            }
+        }
+
+        .info-icon {
+            position: relative;
+            color: #4a5568;
+            cursor: pointer;
+        }
+
+        .info-icon .tooltip {
+            visibility: hidden;
+            position: absolute;
+            top: calc(100% + 10px);
+            right: -10px;
+            width: 300px;
+            background: #ff6b6b;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
+        }
+
+        .info-icon .tooltip::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 13px;
+            width: 12px;
+            height: 12px;
+            background: #ff6b6b;
+            transform: rotate(45deg);
+        }
+
+        .info-icon:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .quote {
+            text-align: center;
+            color: #4a5568;
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-bottom: 2px solid #ffe0e0;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            outline: none;
+            background: transparent;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        input:focus {
+            border-bottom-color: #ff6b6b;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        button:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #ffe0e0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            display: none;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .results.visible {
+            opacity: 1;
+            transform: translateY(0);
+            display: block;
+            height: auto;
+        }
+
+        .result-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #fff5f5;
+            border-radius: 8px;
+            color: #2d3748;
+        }
+
+        .error {
+            color: #ff5252;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+<div class="calculator">
+    <div class="title-wrapper">
+        <h1>Couple's Expense Calculator</h1>
+        <div class="info-icon" title="How it works">
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 16v-4"></path>
+                <path d="M12 8h.01"></path>
+            </svg>
+            <div class="tooltip">
+                This calculator helps couples split their shared expenses fairly by ensuring each partner contributes the same percentage of their income, regardless of how much they earn. This way, both partners share the financial responsibility proportionally to their means.
+            </div>
+        </div>
+    </div>
+    <form id="calculator-form">
+        <div class="input-group">
+            <label for="income1">Your monthly income</label>
+            <input type="number" id="income1" min="0" step="0.01" required placeholder="e.g., 3000">
+            <div class="error" id="error-income1">Please enter a valid income</div>
+        </div>
+
+        <div class="input-group">
+            <label for="income2">Your partner's monthly income</label>
+            <input type="number" id="income2" min="0" step="0.01" required placeholder="e.g., 4000">
+            <div class="error" id="error-income2">Please enter a valid income</div>
+        </div>
+
+        <div class="input-group">
+            <label for="expenses">Shared monthly expenses</label>
+            <input type="number" id="expenses" min="0" step="0.01" required placeholder="e.g., 2500">
+            <div class="error" id="error-expenses">Please enter valid expenses</div>
+        </div>
+
+        <button type="submit">Calculate Fair Split</button>
+    </form>
+
+    <div class="results" id="results">
+        <div class="result-item">
+            <strong>You should contribute:</strong>
+            <span id="result1"></span>
+        </div>
+        <div class="result-item">
+            <strong>Your partner should contribute:</strong>
+            <span id="result2"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+  document.getElementById('calculator-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Get input values
+    const income1 = parseFloat(document.getElementById('income1').value);
+    const income2 = parseFloat(document.getElementById('income2').value);
+    const expenses = parseFloat(document.getElementById('expenses').value);
+
+    // Validation
+    let isValid = true;
+
+    if (!income1 || income1 <= 0) {
+      document.getElementById('error-income1').style.display = 'block';
+      document.getElementById('income1').classList.add('shake');
+      isValid = false;
+    } else {
+      document.getElementById('error-income1').style.display = 'none';
+    }
+
+    if (!income2 || income2 <= 0) {
+      document.getElementById('error-income2').style.display = 'block';
+      document.getElementById('income2').classList.add('shake');
+      isValid = false;
+    } else {
+      document.getElementById('error-income2').style.display = 'none';
+    }
+
+    if (!expenses || expenses <= 0) {
+      document.getElementById('error-expenses').style.display = 'block';
+      document.getElementById('expenses').classList.add('shake');
+      isValid = false;
+    } else {
+      document.getElementById('error-expenses').style.display = 'none';
+    }
+
+    // Remove shake animation after it completes
+    document.querySelectorAll('.shake').forEach(element => {
+      element.addEventListener('animationend', () => {
+        element.classList.remove('shake');
+      });
+    });
+
+    if (!isValid) return;
+
+    // Calculate fair split
+    const totalIncome = income1 + income2;
+    const person1Share = (income1 / totalIncome) * expenses;
+    const person2Share = (income2 / totalIncome) * expenses;
+
+    // Format results with currency
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    });
+
+    // Update and show results
+    document.getElementById('result1').textContent = `${formatter.format(person1Share)} (${((person1Share/income1)*100).toFixed(1)}% of income)`;
+    document.getElementById('result2').textContent = `${formatter.format(person2Share)} (${((person2Share/income2)*100).toFixed(1)}% of income)`;
+
+    // Show results with animation
+    document.getElementById('results').classList.add('visible');
+  });
+
+  // Remove error messages when user starts typing
+  document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('input', function() {
+      const errorId = 'error-' + this.id;
+      document.getElementById(errorId).style.display = 'none';
+    });
+  });
+</script>
+</body>
+</html>
