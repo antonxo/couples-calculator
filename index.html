@@ -73,13 +73,17 @@
             position: relative;
             color: #4a5568;
             cursor: pointer;
+            /* Make the touch target larger for mobile */
+            padding: 8px;
+            margin: -8px;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .info-icon .tooltip {
             visibility: hidden;
             position: absolute;
-            top: calc(100% + 10px);
-            right: -10px;
+            top: calc(100% + 5px);
+            right: 0;
             width: 300px;
             background: #ff6b6b;
             color: white;
@@ -91,23 +95,33 @@
             opacity: 0;
             transform: translateY(-10px);
             transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
+            pointer-events: none;
         }
 
         .info-icon .tooltip::before {
             content: '';
             position: absolute;
             top: -6px;
-            right: 13px;
+            right: 10px;
             width: 12px;
             height: 12px;
             background: #ff6b6b;
             transform: rotate(45deg);
         }
 
-        .info-icon:hover .tooltip {
+        /* Handle both hover and focus states */
+        .info-icon:hover .tooltip,
+        .info-icon:focus .tooltip,
+        .info-icon:active .tooltip,
+        .info-icon.tooltip-active .tooltip {
             visibility: visible;
             opacity: 1;
             transform: translateY(0);
+        }
+
+        /* Remove focus outline while maintaining accessibility */
+        .info-icon:focus {
+            outline: none;
         }
 
         .quote {
@@ -219,13 +233,20 @@
         .shake {
             animation: shake 0.3s ease-in-out;
         }
+
+        /* Fix for iOS hover state */
+        @media (hover: none) {
+            .info-icon {
+                cursor: default;
+            }
+        }
     </style>
 </head>
 <body>
 <div class="calculator">
     <div class="title-wrapper">
         <h1>Couple's Expense Calculator</h1>
-        <div class="info-icon" title="How it works">
+        <div class="info-icon" tabindex="0" role="button" aria-label="Information about the calculator">
             <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M12 16v-4"></path>
@@ -271,6 +292,30 @@
 </div>
 
 <script>
+  // Handle info icon interactions
+  const infoIcon = document.querySelector('.info-icon');
+
+  // Toggle tooltip on click/touch for mobile
+  infoIcon.addEventListener('click', function() {
+    this.classList.toggle('tooltip-active');
+  });
+
+  // Handle focus events
+  infoIcon.addEventListener('focus', function() {
+    this.classList.add('tooltip-active');
+  });
+
+  infoIcon.addEventListener('blur', function() {
+    this.classList.remove('tooltip-active');
+  });
+
+  // Close tooltip when clicking outside
+  document.addEventListener('click', function(event) {
+    if (!infoIcon.contains(event.target)) {
+      infoIcon.classList.remove('tooltip-active');
+    }
+  });
+
   document.getElementById('calculator-form').addEventListener('submit', function(e) {
     e.preventDefault();
 
